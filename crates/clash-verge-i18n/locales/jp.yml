@@ -45,6 +45,7 @@ tray:
   global: グローバル
   profiles: プロファイル
   proxies: プロキシ
+  testGroupDelay: 速度テスト
   systemProxy: システムプロキシ
   tunMode: TUN モード
   closeAllConnections: すべての接続を閉じる

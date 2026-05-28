@@ -45,6 +45,7 @@ tray:
   global: سراسری
   profiles: پروفایل‌ها
   proxies: پروکسی‌ها
+  testGroupDelay: تست سرعت
   systemProxy: پروکسی سیستم
   tunMode: حالت TUN
   closeAllConnections: بستن همه اتصال‌ها

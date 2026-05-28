@@ -45,6 +45,7 @@ tray:
   global: Global
   profiles: Profil
   proxies: Proksi
+  testGroupDelay: Tes Kecepatan
   systemProxy: Proksi Sistem
   tunMode: Mode TUN
   closeAllConnections: Tutup Semua Koneksi

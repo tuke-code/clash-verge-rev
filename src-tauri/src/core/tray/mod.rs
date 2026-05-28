@@ -25,7 +25,7 @@ use smartstring::alias::String;
 use std::collections::HashMap;
 use std::time::Duration;
 use tauri::{
-    AppHandle, Wry,
+    AppHandle, Emitter as _, Wry,
     menu::{CheckMenuItem, IsMenuItem, MenuEvent, MenuItem, PredefinedMenuItem, Submenu},
 };
 
@@ -40,6 +40,8 @@ type ProxyMenuItem = (Option<Submenu<Wry>>, Vec<Box<dyn IsMenuItem<Wry>>>);
 
 const TRAY_CLICK_DEBOUNCE_MS: u64 = 300;
 pub const TRAY_ID: &str = "clash-verge-rev-tray";
+const DEFAULT_LATENCY_TEST_URL: &str = "http://cp.cloudflare.com/generate_204";
+const DEFAULT_LATENCY_TIMEOUT: u32 = 10_000;
 
 #[derive(Clone)]
 struct TrayState {}
@@ -452,6 +454,7 @@ fn create_subcreate_proxy_menu_item(
     proxy_mode: &str,
     proxy_group_order_map: Option<HashMap<String, usize>>,
     proxy_nodes_data: Option<Proxies>,
+    test_group_delay_text: &str,
 ) -> Vec<Submenu<Wry>> {
     let proxy_submenus: Vec<Submenu<Wry>> = {
         let mut submenus: Vec<(String, usize, Submenu<Wry>)> = Vec::new();
@@ -507,9 +510,23 @@ fn create_subcreate_proxy_menu_item(
                 }
 
                 let group_display_name = group_name.to_string();
+                let test_group_delay = match MenuItem::with_id(
+                    app_handle,
+                    format!("{}_{}", MenuIds::TEST_GROUP_DELAY, group_name),
+                    test_group_delay_text,
+                    true,
+                    None::<&str>,
+                ) {
+                    Ok(item) => item,
+                    Err(e) => {
+                        logging!(warn, Type::Tray, "Failed to create group delay menu item: {}", e);
+                        continue;
+                    }
+                };
 
-                let group_items_refs: Vec<&dyn IsMenuItem<Wry>> =
-                    group_items.iter().map(|item| item as &dyn IsMenuItem<Wry>).collect();
+                let mut group_items_refs: Vec<&dyn IsMenuItem<Wry>> = Vec::with_capacity(group_items.len() + 1);
+                group_items_refs.push(&test_group_delay);
+                group_items_refs.extend(group_items.iter().map(|item| item as &dyn IsMenuItem<Wry>));
 
                 if let Ok(submenu) = Submenu::with_id_and_items(
                     app_handle,
@@ -719,8 +736,13 @@ async fn create_tray_menu(
         &profile_menu_items_refs,
     )?;
 
-    let proxy_sub_menus =
-        create_subcreate_proxy_menu_item(app_handle, current_proxy_mode, proxy_group_order_map, proxy_nodes_data);
+    let proxy_sub_menus = create_subcreate_proxy_menu_item(
+        app_handle,
+        current_proxy_mode,
+        proxy_group_order_map,
+        proxy_nodes_data,
+        &texts.test_group_delay,
+    );
 
     let (proxies_menu, inline_proxy_items) = match tray_proxy_groups_display_mode {
         "default" => create_proxy_menu_item(app_handle, false, proxy_sub_menus, &texts.proxies)?,
@@ -981,6 +1003,16 @@ fn on_menu_event(_: &AppHandle, event: MenuEvent) {
                 };
                 feat::toggle_proxy_profile(profile_index.into()).await;
             }
+            id if id.starts_with(MenuIds::TEST_GROUP_DELAY) => {
+                let group_name = match id
+                    .strip_prefix(MenuIds::TEST_GROUP_DELAY)
+                    .and_then(|rest| rest.strip_prefix('_'))
+                {
+                    Some(group_name) if !group_name.is_empty() => group_name,
+                    _ => return,
+                };
+                test_proxy_group_delay(group_name).await;
+            }
             id if id.starts_with("proxy_") => {
                 // proxy_{group_name}_{proxy_name}
                 let rest = match id.strip_prefix("proxy_") {
@@ -1001,4 +1033,36 @@ fn on_menu_event(_: &AppHandle, event: MenuEvent) {
         // We dont expected to refresh tray state here
         // as the inner handle function (SHOULD) already takes care of it
     });
+}
+
+async fn test_proxy_group_delay(group_name: &str) {
+    let verge = Config::verge().await.latest_arc();
+    let test_url = verge
+        .default_latency_test
+        .as_deref()
+        .map(str::trim)
+        .filter(|url| !url.is_empty())
+        .unwrap_or(DEFAULT_LATENCY_TEST_URL);
+    let timeout = verge
+        .default_latency_timeout
+        .and_then(|timeout| u32::try_from(timeout).ok())
+        .filter(|timeout| *timeout > 0)
+        .unwrap_or(DEFAULT_LATENCY_TIMEOUT);
+
+    if let Err(err) = handle::Handle::mihomo()
+        .await
+        .delay_group(group_name, test_url, timeout)
+        .await
+    {
+        logging!(
+            error,
+            Type::Tray,
+            "Failed to test tray proxy group delay for {}: {}",
+            group_name,
+            err
+        );
+    }
+
+    logging_error!(Type::Tray, Tray::global().update_menu().await);
+    let _ = handle::Handle::app_handle().emit("verge://refresh-proxy-config", ());
 }

@@ -45,6 +45,7 @@ tray:
   global: Глобаль
   profiles: Профильләр
   proxies: Проксилар
+  testGroupDelay: Тизлек сынау
   systemProxy: Системалы прокси
   tunMode: TUN режимы
   closeAllConnections: Барлык тоташуларны ябу

@@ -45,6 +45,7 @@ tray:
   global: Global
   profiles: Profiles
   proxies: Proxies
+  testGroupDelay: Speed Test
   systemProxy: System Proxy
   tunMode: TUN Mode
   closeAllConnections: Close All Connections

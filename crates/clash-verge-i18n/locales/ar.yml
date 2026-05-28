@@ -45,6 +45,7 @@ tray:
   global: عام
   profiles: الملفات التعريفية
   proxies: وكلاء
+  testGroupDelay: اختبار السرعة
   systemProxy: وكيل النظام
   tunMode: وضع TUN
   closeAllConnections: إغلاق كل الاتصالات
