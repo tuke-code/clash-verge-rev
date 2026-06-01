@@ -3,6 +3,7 @@ import { Box, SvgIcon, TextField, styled, IconButton } from '@mui/material'
 import Tooltip from '@mui/material/Tooltip'
 import {
   ChangeEvent,
+  MouseEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -35,6 +36,7 @@ type SearchProps = {
   useRegularExpression?: boolean
   searchState?: Partial<SearchOptionState>
   onSearch: (match: (content: string) => boolean, state: SearchState) => void
+  onClick?: (e: MouseEvent<HTMLDivElement> | undefined) => void
 }
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -80,6 +82,7 @@ export const BaseSearchBox = ({
   matchWholeWord: defaultMatchWholeWord = false,
   useRegularExpression: defaultUseRegularExpression = false,
   onSearch,
+  onClick,
 }: SearchProps) => {
   const { t } = useTranslation()
   const onSearchRef = useRef(onSearch)
@@ -199,6 +202,9 @@ export const BaseSearchBox = ({
         placeholder={placeholder ?? t('shared.placeholders.filter')}
         sx={{ input: { py: 0.65, px: 1.25 } }}
         value={text}
+        onClick={(e) => {
+          onClick?.(e)
+        }}
         onChange={handleChangeText}
         error={!!effectiveErrorMessage}
         slotProps={{

@@ -28,7 +28,11 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import { delayGroup, healthcheckProxyProvider } from 'tauri-plugin-mihomo-api'
 
-import { BaseEmpty } from '@/components/base'
+import {
+  BaseEmpty,
+  StickyVirtualList,
+  StickyVirtualListHandle,
+} from '@/components/base'
 import { useProxySelection } from '@/hooks/use-proxy-selection'
 import { useVerge } from '@/hooks/use-verge'
 import { useProxiesData } from '@/providers/app-data-context'
@@ -207,6 +211,8 @@ export const ProxyGroups = (props: Props) => {
   })
   const virtualItems = virtualizer.getVirtualItems()
   const activeStickyIndex = activeStickyIndexRef.current
+
+  const stickyListRef = useRef<StickyVirtualListHandle>(null)
 
   // 从 localStorage 恢复滚动位置
   useLayoutEffect(() => {
@@ -453,7 +459,10 @@ export const ProxyGroups = (props: Props) => {
     )
 
     if (index >= 0) {
-      virtualizer.scrollToIndex(index, { align: 'center', behavior: 'smooth' })
+      stickyListRef.current?.scrollToIndex(index, {
+        align: 'center',
+        behavior: 'smooth',
+      })
     }
   })
 
@@ -465,10 +474,13 @@ export const ProxyGroups = (props: Props) => {
       )
 
       if (index >= 0) {
-        virtualizer.scrollToIndex(index, { align: 'start', behavior: 'smooth' })
+        stickyListRef.current?.scrollToIndex(index, {
+          align: 'start',
+          behavior: 'smooth',
+        })
       }
     },
-    [renderList, virtualizer],
+    [renderList, stickyListRef],
   )
 
   const proxyGroupNames = useMemo(() => {
@@ -477,6 +489,63 @@ export const ProxyGroups = (props: Props) => {
       .map((item) => item.group!.name)
     return Array.from(new Set(names))
   }, [renderList])
+
+  const handleGroupToggle = useCallback(
+    async (group: IProxyGroupItem) => {
+      const index = renderList.findIndex(
+        (item) => item.type === 0 && item.group.name === group.name,
+      )
+      if (index < 0) return
+
+      if (!stickyListRef.current?.isItemScrolledPastStart(index, 1)) return
+
+      stickyListRef.current.scrollToIndex(index, {
+        align: 'start',
+        behavior: 'auto',
+      })
+
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve())
+      })
+    },
+    [renderList],
+  )
+
+  const renderGroupItem = useCallback(
+    (item: IRenderItem, _index: number, _stickyed: boolean) => (
+      <ProxyRender
+        item={item}
+        onLocation={handleLocation}
+        onCheckAll={handleCheckAll}
+        onHeadState={onHeadState}
+        onChangeProxy={handleChangeProxy}
+        onGroupToggle={handleGroupToggle}
+        isChainMode={isChainMode}
+      />
+    ),
+    [
+      handleChangeProxy,
+      handleCheckAll,
+      onHeadState,
+      handleLocation,
+      isChainMode,
+      handleGroupToggle,
+    ],
+  )
+
+  const renderProxyItem = useCallback(
+    (item: IRenderItem) => (
+      <ProxyRender
+        key={item.key}
+        item={item}
+        onLocation={handleLocation}
+        onCheckAll={handleCheckAll}
+        onHeadState={onHeadState}
+        onChangeProxy={handleChangeProxy}
+      />
+    ),
+    [handleChangeProxy, handleCheckAll, onHeadState, handleLocation],
+  )
 
   const renderProxyList = (height: string) => (
     <ProxyVirtualList
@@ -564,9 +633,21 @@ export const ProxyGroups = (props: Props) => {
   }
 
   return (
-    <div
-      style={{ position: 'relative', height: '100%', willChange: 'transform' }}
-    >
+    <div style={{ position: 'relative', height: '100%' }}>
+      <Box sx={{ width: '100%', height: '100%' }}>
+        <StickyVirtualList
+          ref={stickyListRef}
+          style={{ height: '100%', width: '100%' }}
+          items={renderList}
+          isGroupItem={(item) => item.type === 0}
+          getItemKey={(item) => item.key}
+          estimateGroupItemHeight={76}
+          estimateItemHeight={64}
+          renderGroupItem={renderGroupItem}
+          renderItem={renderProxyItem}
+        />
+      </Box>
+
       {/* 代理组导航栏 */}
       {mode === 'rule' && (
         <ProxyGroupNavigator
@@ -577,7 +658,6 @@ export const ProxyGroups = (props: Props) => {
         />
       )}
 
-      {renderProxyList('calc(100% - 14px)')}
       <ScrollTopButton show={showScrollTop} onClick={scrollToTop} />
     </div>
   )
@@ -761,7 +841,6 @@ function ProxyVirtualList({
   virtualItems,
   renderList,
   activeStickyIndex,
-  indent,
   isChainMode,
   measureElement,
   onLocation,
@@ -804,7 +883,6 @@ function ProxyVirtualList({
           >
             <ProxyRender
               item={renderList[virtualItem.index]}
-              indent={indent}
               onLocation={onLocation}
               onCheckAll={onCheckAll}
               onHeadState={onHeadState}
