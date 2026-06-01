@@ -371,6 +371,7 @@ function NormalProxyGroups(props: { mode: string }) {
   const initialOffset = getScrollOffset()
 
   useEffect(() => {
+    // TODO: 第一次渲染会导致位置错误
     if (!stickyListRef.current) return
     const scrollEle = stickyListRef.current.getScrollElement()
     if (!scrollEle) return
