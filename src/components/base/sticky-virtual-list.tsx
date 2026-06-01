@@ -41,6 +41,7 @@ export interface StickyVirtualListHandle {
 }
 
 export interface StickyVirtualListProps<TItem> {
+  initialOffset?: number
   items: TItem[]
   isGroupItem: (item: TItem, index: number) => boolean
   getItemKey: (item: TItem, index: number) => React.Key
@@ -62,6 +63,7 @@ export const StickyVirtualList = forwardRef(function StickyVirtualListInner<
   ref: React.ForwardedRef<StickyVirtualListHandle>,
 ) {
   const {
+    initialOffset = 0,
     items,
     isGroupItem,
     getItemKey,
@@ -112,6 +114,7 @@ export const StickyVirtualList = forwardRef(function StickyVirtualListInner<
   }, [getEstimatedItemHeight, items.length])
 
   const rowVirtualizer = useVirtualizer({
+    initialOffset,
     count: items.length,
     estimateSize: getEstimatedItemHeight,
     getItemKey: (index) => getItemKey(items[index], index),

@@ -67,6 +67,7 @@ const ProxyPage = () => {
 
   const onToggleChainMode = useLockFn(async () => {
     const newChainMode = !isChainMode
+    console.log(newChainMode)
 
     setIsChainMode(newChainMode)
     // 保存链式代理按钮状态到 localStorage
@@ -133,7 +134,7 @@ const ProxyPage = () => {
   return (
     <BasePage
       full
-      contentStyle={{ height: '101.5%' }}
+      contentStyle={{ height: '100%' }}
       title={
         isChainMode ? (
           <Box

@@ -28,6 +28,7 @@ import type { IRenderItem } from './use-render-list'
 
 interface RenderProps {
   item: IRenderItem
+  stickyed?: boolean
   isChainMode?: boolean
   onLocation: (group: IRenderItem['group']) => void
   onCheckAll: (groupName: string) => void
@@ -43,6 +44,7 @@ export const ProxyRender = (props: RenderProps) => {
   const { t } = useTranslation()
   const {
     item,
+    stickyed = false,
     onLocation,
     onCheckAll,
     onHeadState,
@@ -85,6 +87,12 @@ export const ProxyRender = (props: RenderProps) => {
       <div style={{ padding: '4px 8px' }}>
         <ListItemButton
           dense
+          sx={{
+            boxShadow:
+              stickyed && headState?.open
+                ? '0 4px 8px rgba(0, 0, 0, 0.2) !important'
+                : undefined,
+          }}
           style={{
             background: itembackgroundcolor,
             height: '100%',
