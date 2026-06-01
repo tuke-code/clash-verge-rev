@@ -2,6 +2,7 @@ import { Box } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
 import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual'
 import { useLockFn } from 'ahooks'
+import { throttle } from 'lodash-es'
 import {
   lazy,
   Suspense,
@@ -12,7 +13,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useLocation } from 'react-router'
 import { delayGroup, healthcheckProxyProvider } from 'tauri-plugin-mihomo-api'
 
 import {
@@ -56,7 +56,6 @@ interface Props {
 }
 
 export const ProxyGroups = (props: Props) => {
-  const { pathname } = useLocation()
   const { mode, isChainMode = false, chainConfigData } = props
 
   // Drive 3s polling on the shared TQ cache; data is read via granular context below
@@ -205,7 +204,7 @@ export const ProxyGroups = (props: Props) => {
       console.error('Error restoring scroll position:', e)
     }
     restoredScrollKeyRef.current = scrollPositionKey
-  }, [pathname, renderList.length, scrollPositionKey])
+  }, [renderList.length, scrollPositionKey])
 
   // 改为使用节流函数保存滚动位置
   const saveScrollPosition = useCallback(
@@ -378,7 +377,7 @@ export const ProxyGroups = (props: Props) => {
         })
       }
     },
-    [renderList, stickyListRef],
+    [renderList],
   )
 
   const proxyGroupNames = useMemo(() => {
@@ -501,40 +500,4 @@ export const ProxyGroups = (props: Props) => {
       <ScrollTopButton show={showScrollTop} onClick={scrollToTop} />
     </div>
   )
-}
-
-// 替换简单防抖函数为更优的节流函数
-function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number,
-): (...args: Parameters<T>) => void {
-  let timer: ReturnType<typeof setTimeout> | null = null
-  let previous = 0
-  let lastArgs: Parameters<T> | null = null
-
-  const run = (args: Parameters<T>) => {
-    previous = Date.now()
-    timer = null
-    lastArgs = null
-    func(...args)
-  }
-
-  return function (...args: Parameters<T>) {
-    const now = Date.now()
-    const remaining = wait - (now - previous)
-    lastArgs = args
-
-    if (remaining <= 0 || remaining > wait) {
-      if (timer) {
-        clearTimeout(timer)
-      }
-      run(args)
-    } else if (!timer) {
-      timer = setTimeout(() => {
-        if (lastArgs) {
-          run(lastArgs)
-        }
-      }, remaining)
-    }
-  }
 }
