@@ -2,8 +2,8 @@ import { ClearRounded } from '@mui/icons-material'
 import { Box, SvgIcon, TextField, styled, IconButton } from '@mui/material'
 import Tooltip from '@mui/material/Tooltip'
 import {
-  ChangeEvent,
-  MouseEvent,
+  type ChangeEvent,
+  type MouseEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -36,7 +36,7 @@ type SearchProps = {
   useRegularExpression?: boolean
   searchState?: Partial<SearchOptionState>
   onSearch: (match: (content: string) => boolean, state: SearchState) => void
-  onClick?: (e: MouseEvent<HTMLDivElement> | undefined) => void
+  onClick?: (e: MouseEvent<HTMLDivElement>) => void
 }
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
