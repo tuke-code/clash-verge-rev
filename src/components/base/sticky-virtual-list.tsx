@@ -55,7 +55,9 @@ export interface StickyVirtualListProps<TItem> {
   overscan?: number
 }
 
-function StickyVirtualListInner<TItem>(
+export const StickyVirtualList = forwardRef(function StickyVirtualListInner<
+  TItem,
+>(
   props: StickyVirtualListProps<TItem>,
   ref: React.ForwardedRef<StickyVirtualListHandle>,
 ) {
@@ -286,9 +288,7 @@ function StickyVirtualListInner<TItem>(
       </div>
     </div>
   )
-}
-
-export const StickyVirtualList = forwardRef(StickyVirtualListInner) as <TItem>(
+}) as <TItem>(
   props: StickyVirtualListProps<TItem> & {
     ref?: React.Ref<StickyVirtualListHandle>
   },
