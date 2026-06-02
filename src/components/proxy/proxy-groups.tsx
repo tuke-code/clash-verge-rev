@@ -63,7 +63,7 @@ function useProxyRenderState(
     isChainMode,
     activeSelectedGroup,
   )
-  const scrollOffsetKey = useMemo(
+  const scrollPositionKey = useMemo(
     () =>
       isChainMode
         ? `${mode}:chain:${activeSelectedGroup ?? 'all'}`
@@ -140,36 +140,36 @@ function useProxyRenderState(
     }),
   )
 
-  const saveScrollOffset = useCallback(
+  const saveScrollPosition = useCallback(
     (scrollTop: number) => {
-      const scrollOffset = localStorage.getItem('proxy-scroll-positions')
+      const scrollPositions = localStorage.getItem('proxy-scroll-positions')
         ? JSON.parse(localStorage.getItem('proxy-scroll-positions') ?? '{}')
         : {}
-      scrollOffset[scrollOffsetKey] = scrollTop
+      scrollPositions[scrollPositionKey] = scrollTop
       try {
         localStorage.setItem(
           'proxy-scroll-positions',
-          JSON.stringify(scrollOffset),
+          JSON.stringify(scrollPositions),
         )
       } catch (e) {
         console.error('Error saving scroll position:', e)
       }
     },
-    [scrollOffsetKey],
+    [scrollPositionKey],
   )
 
-  const getScrollOffset = useCallback(() => {
+  const getScrollPosition = useCallback(() => {
     try {
       const savedPositions = localStorage.getItem('proxy-scroll-positions')
       if (savedPositions) {
         const positions = JSON.parse(savedPositions)
-        const savedPosition = positions[scrollOffsetKey]
+        const savedPosition = positions[scrollPositionKey]
         return savedPosition ?? 0
       }
     } catch (e) {
       console.error('Error restoring scroll position:', e)
     }
-  }, [scrollOffsetKey])
+  }, [scrollPositionKey])
 
   return {
     verge,
@@ -177,8 +177,8 @@ function useProxyRenderState(
     onProxies,
     onHeadState,
     handleCheckAll,
-    saveScrollOffset,
-    getScrollOffset,
+    saveScrollPosition,
+    getScrollPosition,
   }
 }
 
@@ -208,8 +208,8 @@ function ChainProxyGroups(props: {
     renderList,
     onHeadState,
     handleCheckAll,
-    getScrollOffset,
-    saveScrollOffset,
+    getScrollPosition,
+    saveScrollPosition,
   } = useProxyRenderState(mode, true, activeSelectedGroup)
 
   const parentRef = useRef<HTMLDivElement>(null)
@@ -257,7 +257,7 @@ function ChainProxyGroups(props: {
     const node = parentRef.current
     if (!node) return
 
-    const savedPosition = getScrollOffset()
+    const savedPosition = getScrollPosition()
     if (savedPosition !== undefined) {
       node.scrollTop = savedPosition
       scrollTopRef.current = savedPosition
@@ -265,11 +265,11 @@ function ChainProxyGroups(props: {
       showScrollTopRef.current = nextShowScrollTop
       queueMicrotask(() => setShowScrollTop(nextShowScrollTop))
     }
-  }, [renderList.length, getScrollOffset])
+  }, [renderList.length, getScrollPosition])
 
   const saveScrollPositionThrottled = useMemo(
-    () => throttle(saveScrollOffset, 500),
-    [saveScrollOffset],
+    () => throttle(saveScrollPosition, 500),
+    [saveScrollPosition],
   )
 
   const handleScroll = useCallback(
@@ -299,10 +299,10 @@ function ChainProxyGroups(props: {
     node.addEventListener('scroll', listener, options)
 
     return () => {
-      saveScrollOffset(scrollTopRef.current)
+      saveScrollPosition(scrollTopRef.current)
       node.removeEventListener('scroll', listener, options)
     }
-  }, [handleScroll, saveScrollOffset])
+  }, [handleScroll, saveScrollPosition])
 
   const scrollToTop = useCallback(() => {
     parentRef.current?.scrollTo?.({
@@ -365,11 +365,12 @@ function NormalProxyGroups(props: { mode: string }) {
     onProxies,
     onHeadState,
     handleCheckAll,
-    getScrollOffset,
-    saveScrollOffset,
+    getScrollPosition,
+    saveScrollPosition,
   } = useProxyRenderState(mode, false, null)
   const renderFirstRef = useRef(true)
 
+  // 目前无法使用 StickyVirtualList 的 initialOffset 值设置初始化，具体原因需排查
   // 从 localStorage 恢复滚动位置
   useLayoutEffect(() => {
     if (renderList.length === 0) return
@@ -377,18 +378,18 @@ function NormalProxyGroups(props: { mode: string }) {
     if (!node) return
     if (!renderFirstRef.current) return
 
-    const savedPosition = getScrollOffset()
+    const savedPosition = getScrollPosition()
     if (savedPosition !== undefined) {
       node.scrollTop = savedPosition
       if (node.scrollTop === savedPosition) {
         renderFirstRef.current = false
       }
     }
-  }, [renderList.length, getScrollOffset])
+  }, [renderList.length, getScrollPosition])
 
   const saveScrollPositionThrottled = useMemo(
-    () => throttle(saveScrollOffset, 500),
-    [saveScrollOffset],
+    () => throttle(saveScrollPosition, 500),
+    [saveScrollPosition],
   )
 
   const handleScroll = useCallback(
