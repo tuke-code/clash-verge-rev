@@ -205,6 +205,8 @@ export const StickyVirtualList = forwardRef(function StickyVirtualListInner<
       style={{
         overflowY: 'auto',
         contain: 'strict',
+        width: '100%',
+        height: '100%',
         overflowAnchor: 'none',
         ...style,
       }}
@@ -214,6 +216,7 @@ export const StickyVirtualList = forwardRef(function StickyVirtualListInner<
           height: rowVirtualizer.getTotalSize(),
           position: 'relative',
           width: '100%',
+          paddingBottom: 10,
         }}
       >
         <div

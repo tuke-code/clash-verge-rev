@@ -539,7 +539,6 @@ function NormalProxyGroups(props: { mode: string }) {
     <div style={{ position: 'relative', height: '100%' }}>
       <StickyVirtualList
         ref={stickyListRef}
-        style={{ height: '100%', width: '100%' }}
         items={renderList}
         isGroupItem={(item) => item.type === 0}
         getItemKey={(item) => item.key}
