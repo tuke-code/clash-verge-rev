@@ -136,13 +136,21 @@ export const ProxyRender = (props: RenderProps) => {
             secondary={
               <Box
                 sx={{
-                  overflow: 'hidden',
                   display: 'flex',
                   alignItems: 'center',
                   pt: '2px',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                <Box component="span" sx={{ marginTop: '2px' }}>
+                <Box
+                  component="span"
+                  sx={{
+                    marginTop: '2px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
                   <StyledTypeBox>{group.type}</StyledTypeBox>
                   <StyledSubtitle sx={{ color: 'text.secondary' }}>
                     {group.now}

@@ -368,28 +368,67 @@ function NormalProxyGroups(props: { mode: string }) {
     getScrollOffset,
     saveScrollOffset,
   } = useProxyRenderState(mode, false, null)
-  const initialOffset = getScrollOffset()
+
+  // 从 localStorage 恢复滚动位置
+  useLayoutEffect(() => {
+    if (renderList.length === 0) return
+    const node = stickyListRef.current?.getScrollElement()
+    if (!node) return
+
+    const savedPosition = getScrollOffset()
+    if (savedPosition !== undefined) {
+      node.scrollTop = savedPosition
+      // scrollTopRef.current = savedPosition;
+      // const nextShowScrollTop = savedPosition > 100;
+      // showScrollTopRef.current = nextShowScrollTop;
+      // queueMicrotask(() => setShowScrollTop(nextShowScrollTop));
+    }
+  }, [renderList.length, getScrollOffset])
+
+  const saveScrollPositionThrottled = useMemo(
+    () => throttle(saveScrollOffset, 500),
+    [saveScrollOffset],
+  )
+
+  const handleScroll = useCallback(
+    (event: Event) => {
+      const target = event.target as HTMLElement | null
+      const nextScrollTop = target?.scrollTop ?? 0
+      // const nextShowScrollTop = nextScrollTop > 100;
+      // scrollTopRef.current = nextScrollTop;
+
+      // if (showScrollTopRef.current !== nextShowScrollTop) {
+      //   showScrollTopRef.current = nextShowScrollTop;
+      //   setShowScrollTop(nextShowScrollTop);
+      // }
+
+      saveScrollPositionThrottled(nextScrollTop)
+    },
+    [saveScrollPositionThrottled],
+  )
 
   useEffect(() => {
-    // TODO: 第一次渲染会导致位置错误
-    if (!stickyListRef.current) return
-    const scrollEle = stickyListRef.current.getScrollElement()
-    if (!scrollEle) return
+    const node = stickyListRef.current?.getScrollElement()
+    if (!node) return
 
-    const handleScroll = throttle(() => {
-      const scrollTop = scrollEle?.scrollTop ?? 0
-      saveScrollOffset(scrollTop)
-    }, 300)
-    if (scrollEle) {
-      scrollEle.addEventListener('scroll', handleScroll)
-    }
+    const listener = handleScroll as EventListener
+    const options: AddEventListenerOptions = { passive: true }
+
+    node.addEventListener('scroll', listener, options)
 
     return () => {
-      if (scrollEle) {
-        scrollEle.removeEventListener('scroll', handleScroll)
-      }
+      // saveScrollOffset(scrollTopRef.current);
+      node.removeEventListener('scroll', listener, options)
     }
-  }, [saveScrollOffset])
+  }, [handleScroll])
+
+  // const scrollToTop = useCallback(() => {
+  //   parentRef.current?.scrollTo?.({
+  //     top: 0,
+  //     behavior: "smooth",
+  //   });
+  //   scrollTopRef.current = 0;
+  // }, []);
 
   const { handleProxyGroupChange } = useProxySelection({
     onSuccess: () => {
@@ -513,10 +552,8 @@ function NormalProxyGroups(props: { mode: string }) {
 
   return (
     <div style={{ position: 'relative', height: '100%' }}>
-      {/*<Box sx={{ width: "100%", height: "100%" }}>*/}
       <StickyVirtualList
         ref={stickyListRef}
-        initialOffset={initialOffset}
         style={{ height: '100%', width: '100%' }}
         items={renderList}
         isGroupItem={(item) => item.type === 0}
@@ -526,7 +563,6 @@ function NormalProxyGroups(props: { mode: string }) {
         renderGroupItem={renderGroupItem}
         renderItem={renderProxyItem}
       />
-      {/*</Box>*/}
 
       {/* 代理组导航栏 */}
       {mode === 'rule' && (
