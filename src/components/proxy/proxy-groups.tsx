@@ -368,20 +368,21 @@ function NormalProxyGroups(props: { mode: string }) {
     getScrollOffset,
     saveScrollOffset,
   } = useProxyRenderState(mode, false, null)
+  const renderFirstRef = useRef(true)
 
   // 从 localStorage 恢复滚动位置
   useLayoutEffect(() => {
     if (renderList.length === 0) return
     const node = stickyListRef.current?.getScrollElement()
     if (!node) return
+    if (!renderFirstRef.current) return
 
     const savedPosition = getScrollOffset()
     if (savedPosition !== undefined) {
       node.scrollTop = savedPosition
-      // scrollTopRef.current = savedPosition;
-      // const nextShowScrollTop = savedPosition > 100;
-      // showScrollTopRef.current = nextShowScrollTop;
-      // queueMicrotask(() => setShowScrollTop(nextShowScrollTop));
+      if (node.scrollTop === savedPosition) {
+        renderFirstRef.current = false
+      }
     }
   }, [renderList.length, getScrollOffset])
 
@@ -394,13 +395,6 @@ function NormalProxyGroups(props: { mode: string }) {
     (event: Event) => {
       const target = event.target as HTMLElement | null
       const nextScrollTop = target?.scrollTop ?? 0
-      // const nextShowScrollTop = nextScrollTop > 100;
-      // scrollTopRef.current = nextScrollTop;
-
-      // if (showScrollTopRef.current !== nextShowScrollTop) {
-      //   showScrollTopRef.current = nextShowScrollTop;
-      //   setShowScrollTop(nextShowScrollTop);
-      // }
 
       saveScrollPositionThrottled(nextScrollTop)
     },
@@ -417,18 +411,9 @@ function NormalProxyGroups(props: { mode: string }) {
     node.addEventListener('scroll', listener, options)
 
     return () => {
-      // saveScrollOffset(scrollTopRef.current);
       node.removeEventListener('scroll', listener, options)
     }
   }, [handleScroll])
-
-  // const scrollToTop = useCallback(() => {
-  //   parentRef.current?.scrollTo?.({
-  //     top: 0,
-  //     behavior: "smooth",
-  //   });
-  //   scrollTopRef.current = 0;
-  // }, []);
 
   const { handleProxyGroupChange } = useProxySelection({
     onSuccess: () => {
