@@ -384,6 +384,9 @@ function NormalProxyGroups(props: { mode: string }) {
       if (node.scrollTop === savedPosition) {
         renderFirstRef.current = false
       }
+    } else {
+      // The position that hasn't been saved yet during the first render
+      renderFirstRef.current = false
     }
   }, [renderList.length, getScrollPosition])
 
