@@ -202,9 +202,7 @@ export const BaseSearchBox = ({
         placeholder={placeholder ?? t('shared.placeholders.filter')}
         sx={{ input: { py: 0.65, px: 1.25 } }}
         value={text}
-        onClick={(e) => {
-          onClick?.(e)
-        }}
+        onClick={onClick}
         onChange={handleChangeText}
         error={!!effectiveErrorMessage}
         slotProps={{
