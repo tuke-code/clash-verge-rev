@@ -9,7 +9,7 @@ import VisibilityOffRounded from '@mui/icons-material/VisibilityOffRounded'
 import VisibilityRounded from '@mui/icons-material/VisibilityRounded'
 import WifiTetheringOffRounded from '@mui/icons-material/WifiTetheringOffRounded'
 import WifiTetheringRounded from '@mui/icons-material/WifiTetheringRounded'
-import { Box, IconButton, SxProps, TextField } from '@mui/material'
+import { Box, IconButton, type SxProps, TextField } from '@mui/material'
 import { memo, useEffect } from 'react'
 import { flushSync } from 'react-dom'
 import { useTranslation } from 'react-i18next'
@@ -20,7 +20,7 @@ import delayManager from '@/services/delay'
 import { BaseSearchBox } from '../base'
 
 import type { ProxySortType } from './use-filter-sort'
-import { HeadState } from './use-head-state'
+import type { HeadState } from './use-head-state'
 
 interface Props {
   sx?: SxProps

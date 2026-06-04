@@ -18,7 +18,7 @@ import {
   BaseEmpty,
   BaseLoading,
   StickyVirtualList,
-  StickyVirtualListHandle,
+  type StickyVirtualListHandle,
 } from '@/components/base'
 import { useProxySelection } from '@/hooks/use-proxy-selection'
 import { useVerge } from '@/hooks/use-verge'

@@ -428,13 +428,6 @@ export const useRenderList = (
           },
         )
 
-        ret.push({
-          type: 1,
-          key: `head-${group.name}`,
-          group,
-          headState,
-        })
-
         if (!proxies.length) {
           ret.push({
             type: 3,
