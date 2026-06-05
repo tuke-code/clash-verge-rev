@@ -23,7 +23,7 @@ import { useThemeMode } from '@/services/states'
 import { ProxyGroupTools } from './proxy-group-tools'
 import { ProxyItem } from './proxy-item'
 import { ProxyItemMini } from './proxy-item-mini'
-import { HeadState } from './use-head-state'
+import type { HeadState } from './use-head-state'
 import type { IRenderItem } from './use-render-list'
 
 interface RenderProps {
@@ -56,7 +56,7 @@ export const ProxyRender = (props: RenderProps) => {
   const { verge } = useVerge()
   const enable_group_icon = verge?.enable_group_icon ?? true
   const mode = useThemeMode()
-  const isDark = mode === 'light' ? false : true
+  const isDark = mode === 'dark'
   const itembackgroundcolor = isDark ? '#282A36' : '#ffffff'
   const iconCachePath = useIconCache({
     icon: group.icon,
@@ -74,10 +74,10 @@ export const ProxyRender = (props: RenderProps) => {
       <ProxyItemMini
         key={`${item.key}-${proxyItem?.name ?? 'unknown'}`}
         group={group}
-        proxy={proxyItem!}
+        proxy={proxyItem}
         selected={group.now === proxyItem?.name}
         showType={showType}
-        onClick={() => onChangeProxy(group, proxyItem!)}
+        onClick={() => onChangeProxy(group, proxyItem)}
       />
     ))
   }, [type, proxyCol, item.key, group, showType, onChangeProxy])
@@ -105,32 +105,29 @@ export const ProxyRender = (props: RenderProps) => {
             onHeadState?.(group.name, { open: !headState?.open })
           }}
         >
-          {enable_group_icon &&
-            group.icon &&
-            group.icon.trim().startsWith('http') && (
-              <img
-                src={iconCachePath === '' ? group.icon : iconCachePath}
-                width="32px"
-                style={{ marginRight: '12px', borderRadius: '6px' }}
-              />
-            )}
-          {enable_group_icon &&
-            group.icon &&
-            group.icon.trim().startsWith('data') && (
-              <img
-                src={group.icon}
-                width="32px"
-                style={{ marginRight: '12px', borderRadius: '6px' }}
-              />
-            )}
-          {enable_group_icon &&
-            group.icon &&
-            group.icon.trim().startsWith('<svg') && (
-              <img
-                src={`data:image/svg+xml;base64,${btoa(group.icon)}`}
-                width="32px"
-              />
-            )}
+          {enable_group_icon && group.icon?.trim().startsWith('http') && (
+            <img
+              src={iconCachePath === '' ? group.icon : iconCachePath}
+              alt="group icon"
+              width="32px"
+              style={{ marginRight: '12px', borderRadius: '6px' }}
+            />
+          )}
+          {enable_group_icon && group.icon?.trim().startsWith('data') && (
+            <img
+              src={group.icon}
+              alt="group icon"
+              width="32px"
+              style={{ marginRight: '12px', borderRadius: '6px' }}
+            />
+          )}
+          {enable_group_icon && group.icon?.trim().startsWith('<svg') && (
+            <img
+              src={`data:image/svg+xml;base64,${btoa(group.icon)}`}
+              alt="group icon"
+              width="32px"
+            />
+          )}
           <ListItemText
             primary={<StyledPrimary>{group.name}</StyledPrimary>}
             secondary={
