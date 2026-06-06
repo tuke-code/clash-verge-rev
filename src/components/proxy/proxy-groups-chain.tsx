@@ -382,15 +382,19 @@ export function ProxyGroupsChain(props: ProxyGroupsChainProps) {
 
   const handleChangeProxy = useCallback(
     (_group: IProxyGroupItem, proxy: IProxyItem) => {
+      // 使用函数式更新来避免状态延迟问题
       setProxyChain((prev) => {
+        // 检查是否已经存在相同名称的代理，防止重复添加
         if (prev.some((item) => item.name === proxy.name)) {
+          const warningMessage = t('proxies.page.chain.duplicateNode')
           setDuplicateWarning({
             open: true,
-            message: t('proxies.page.chain.duplicateNode'),
+            message: warningMessage,
           })
-          return prev
+          return prev // 返回原来的状态，不做任何更改
         }
 
+        // 安全获取延迟数据，如果没有延迟数据则设为 undefined
         const delay =
           proxy.history && proxy.history.length > 0
             ? proxy.history[proxy.history.length - 1].delay
@@ -427,7 +431,7 @@ export function ProxyGroupsChain(props: ProxyGroupsChainProps) {
     />
   )
 
-  const showRuleHeader = mode === 'rule'
+  const showRuleHeader = mode === 'rule' && availableGroups.length > 0
 
   return (
     <>
