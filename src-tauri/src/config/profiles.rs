@@ -594,12 +594,12 @@ pub async fn profiles_draft_update_item_safe(index: &String, item: &mut PrfItem)
 
 pub async fn activate_selected_nodes() -> Result<()> {
     log::info!("starting activating selected nodes");
-    if let Some(handle) = ACTIVATE_SELECTED_TASK.lock().take() {
+    let value = ACTIVATE_SELECTED_TASK.lock().take();
+    if let Some(handle) = value {
         log::info!("aborting previous worker");
         handle.abort();
     }
-    let profiles = Config::profiles().await;
-    let profiles = profiles.latest_arc().clone();
+    let profiles = Config::profiles().await.latest_arc();
     let Some(current) = profiles.get_current() else {
         bail!("no current profile running");
     };
