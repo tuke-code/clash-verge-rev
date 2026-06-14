@@ -27,8 +27,8 @@ use tokio::{fs, task::JoinHandle};
 static REGEX_PROFILE_FILE: LazyLock<regex::Regex> =
     LazyLock::new(|| regex::Regex::new(r"^(?:[RLmrpg][a-zA-Z0-9]+\.yaml|s[a-zA-Z0-9]+\.js)$").unwrap());
 
-// Current working thread task handle, used to activate the node selected in the current profile.
-static WORKER_HANDLE: LazyLock<Mutex<Option<JoinHandle<()>>>> = LazyLock::new(|| Mutex::new(None));
+// activate selected nodes task handle
+static ACTIVATE_SELECTED_TASK: LazyLock<Mutex<Option<JoinHandle<()>>>> = LazyLock::new(|| Mutex::new(None));
 
 /// Define the `profiles.yaml` schema
 #[derive(Default, Debug, Clone, Deserialize, Serialize)]
@@ -594,12 +594,12 @@ pub async fn profiles_draft_update_item_safe(index: &String, item: &mut PrfItem)
 
 pub async fn activate_selected_nodes() -> Result<()> {
     log::info!("starting activating selected nodes");
-    if let Some(handle) = WORKER_HANDLE.lock().take() {
+    if let Some(handle) = ACTIVATE_SELECTED_TASK.lock().take() {
         log::info!("aborting previous worker");
         handle.abort();
     }
-    let profiles = Config::profiles();
-    let profiles = profiles.await.latest_arc().clone();
+    let profiles = Config::profiles().await;
+    let profiles = profiles.latest_arc().clone();
     let Some(current) = profiles.get_current() else {
         bail!("no current profile running");
     };
@@ -658,8 +658,8 @@ pub async fn activate_selected_nodes() -> Result<()> {
             handle::Handle::refresh_clash();
         }
         log::info!("activating selected nodes done!");
-        *WORKER_HANDLE.lock() = None;
+        *ACTIVATE_SELECTED_TASK.lock() = None;
     });
-    *WORKER_HANDLE.lock() = Some(handle);
+    *ACTIVATE_SELECTED_TASK.lock() = Some(handle);
     Ok(())
 }
