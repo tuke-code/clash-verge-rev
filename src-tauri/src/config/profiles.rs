@@ -593,10 +593,10 @@ pub async fn profiles_draft_update_item_safe(index: &String, item: &mut PrfItem)
 }
 
 pub async fn activate_selected_nodes() -> Result<()> {
-    log::info!("starting activating selected nodes");
+    logging!(info, Type::Config, "starting activating selected nodes");
     let value = ACTIVATE_SELECTED_TASK.lock().take();
     if let Some(handle) = value {
-        log::info!("aborting previous worker");
+        logging!(info, Type::Config, "aborting previous worker");
         handle.abort();
     }
     let profiles = Config::profiles().await.latest_arc();
@@ -613,51 +613,63 @@ pub async fn activate_selected_nodes() -> Result<()> {
         // check mihomo is running
         for i in 0..10 {
             if i < 0 {
-                log::error!(
+                logging!(
+                    error,
+                    Type::Config,
                     "check that the mihomo api reaches the maximum number of retries, maybe mihomo core is not running"
                 );
                 return;
             }
             if mihomo.get_version().await.is_ok() {
-                log::debug!("check mihomo api success");
+                logging!(debug, Type::Config, "check mihomo api success");
                 break;
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
 
         if let Some(selected) = profile.selected.as_ref() {
-            log::debug!("selected nodes: {selected:?}");
+            logging!(debug, Type::Config, "selected nodes: {selected:?}");
             for selected_item in selected {
                 let mut retry = 10;
                 if let Some(group_name) = selected_item.name.as_ref()
                     && let Some(node) = selected_item.now.as_ref()
                 {
                     while retry >= 0 {
-                        log::debug!("check node[{node}] exists");
+                        logging!(debug, Type::Config, "check node[{node}] exists");
                         if mihomo.get_proxy_by_name(node).await.is_ok() {
-                            log::debug!("node[{node}] exists");
+                            logging!(debug, Type::Config, "node[{node}] exists");
                             break;
                         }
                         retry -= 1;
                         tokio::time::sleep(Duration::from_secs(1)).await;
                     }
                     if retry < 0 {
-                        log::error!(
+                        logging!(
+                            error,
+                            Type::Config,
                             "Failed to select node for proxy: {group_name}, node: {node}, because the node [{node}] does not exist"
                         );
                         continue;
                     }
                     if mihomo.select_node_for_group(group_name, node).await.is_err() {
-                        log::error!("Failed to select node for proxy: {group_name}, node: {node}");
+                        logging!(
+                            error,
+                            Type::Config,
+                            "Failed to select node for proxy: {group_name}, node: {node}"
+                        );
                     } else {
-                        log::info!("Selected node for proxy: {group_name}, node: {node}");
+                        logging!(
+                            info,
+                            Type::Config,
+                            "Selected node for proxy: {group_name}, node: {node}"
+                        );
                     }
                 }
             }
             // refresh clash
             handle::Handle::refresh_clash();
         }
-        log::info!("activating selected nodes done!");
+        logging!(info, Type::Config, "activating selected nodes done!");
         *ACTIVATE_SELECTED_TASK.lock() = None;
     });
     *ACTIVATE_SELECTED_TASK.lock() = Some(handle);
