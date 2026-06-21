@@ -13,7 +13,7 @@ import {
   Chip,
   Tooltip,
 } from '@mui/material'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useIconCache } from '@/hooks/use-icon-cache'
@@ -40,7 +40,7 @@ interface RenderProps {
   onGroupToggle?: (group: IRenderItem['group']) => void
 }
 
-export const ProxyRender = (props: RenderProps) => {
+export const ProxyRender = memo(function ProxyRender(props: RenderProps) {
   const { t } = useTranslation()
   const {
     item,
@@ -252,7 +252,7 @@ export const ProxyRender = (props: RenderProps) => {
   }
 
   return null
-}
+})
 
 const StyledPrimary = styled('span')`
   font-size: 16px;
