@@ -25,7 +25,7 @@ import {
   styled,
 } from '@mui/material'
 import { useLockFn } from 'ahooks'
-import yaml from 'js-yaml'
+import { dump, load } from 'js-yaml'
 import {
   startTransition,
   useCallback,
@@ -272,7 +272,7 @@ export const ProxiesEditorViewer = (props: Props) => {
   const fetchProfile = useCallback(async () => {
     const data = await readProfileFile(profileUid)
 
-    const originProxiesObj = yaml.load(data) as {
+    const originProxiesObj = load(data) as {
       proxies: IProxyConfig[]
     } | null
 
@@ -281,7 +281,7 @@ export const ProxiesEditorViewer = (props: Props) => {
 
   const fetchContent = useCallback(async () => {
     const data = await readProfileFile(property)
-    const obj = yaml.load(data) as ISeqProfileConfig | null
+    const obj = load(data) as ISeqProfileConfig | null
 
     setPrependSeq(obj?.prepend || [])
     setAppendSeq(obj?.append || [])
@@ -296,7 +296,7 @@ export const ProxiesEditorViewer = (props: Props) => {
       return
     }
 
-    const obj = yaml.load(currData) as ISeqProfileConfig | null
+    const obj = load(currData) as ISeqProfileConfig | null
     startTransition(() => {
       setPrependSeq(obj?.prepend ?? [])
       setAppendSeq(obj?.append ?? [])
@@ -312,7 +312,7 @@ export const ProxiesEditorViewer = (props: Props) => {
     const serialize = () => {
       try {
         setCurrData(
-          yaml.dump(
+          dump(
             { prepend: prependSeq, append: appendSeq, delete: deleteSeq },
             { forceQuotes: true },
           ),

@@ -32,7 +32,7 @@ import {
   cancelIdleCallback,
   requestIdleCallback,
 } from 'foxact/request-idle-callback'
-import yaml from 'js-yaml'
+import { dump, load } from 'js-yaml'
 import {
   startTransition,
   useCallback,
@@ -126,7 +126,7 @@ const buildGroupsYaml = (
   append: IProxyGroupConfig[],
   deleteList: string[],
 ) => {
-  return yaml.dump(
+  return dump(
     {
       prepend,
       append,
@@ -334,7 +334,7 @@ export const GroupsEditorViewer = (props: Props) => {
   }
   const fetchContent = useCallback(async () => {
     const data = await readProfileFile(property)
-    const obj = yaml.load(data) as ISeqProfileConfig | null
+    const obj = load(data) as ISeqProfileConfig | null
 
     setPrependSeq(obj?.prepend || [])
     setAppendSeq(obj?.append || [])
@@ -358,7 +358,7 @@ export const GroupsEditorViewer = (props: Props) => {
       return
     }
 
-    const obj = yaml.load(currData) as ISeqProfileConfig | null
+    const obj = load(currData) as ISeqProfileConfig | null
     startTransition(() => {
       setPrependSeq(obj?.prepend ?? [])
       setAppendSeq(obj?.append ?? [])
@@ -397,13 +397,13 @@ export const GroupsEditorViewer = (props: Props) => {
   const fetchProxyPolicy = useCallback(async () => {
     const data = await readProfileFile(profileUid)
     const proxiesData = await readProfileFile(proxiesUid)
-    const originGroupsObj = yaml.load(data) as {
+    const originGroupsObj = load(data) as {
       'proxy-groups': IProxyGroupConfig[]
     } | null
 
-    const originProxiesObj = yaml.load(data) as { proxies: [] } | null
+    const originProxiesObj = load(data) as { proxies: [] } | null
     const originProxies = originProxiesObj?.proxies || []
-    const moreProxiesObj = yaml.load(proxiesData) as ISeqProfileConfig | null
+    const moreProxiesObj = load(proxiesData) as ISeqProfileConfig | null
     const morePrependProxies = moreProxiesObj?.prepend || []
     const moreAppendProxies = moreProxiesObj?.append || []
     const moreDeleteProxies = normalizeDeleteSeq(moreProxiesObj?.delete)
@@ -443,21 +443,21 @@ export const GroupsEditorViewer = (props: Props) => {
     const mergeData = await readProfileFile(mergeUid)
     const globalMergeData = await readProfileFile('Merge')
 
-    const originGroupsObj = yaml.load(data) as {
+    const originGroupsObj = load(data) as {
       'proxy-groups': IProxyGroupConfig[]
     } | null
 
-    const originProviderObj = yaml.load(data) as {
+    const originProviderObj = load(data) as {
       'proxy-providers': Record<string, unknown>
     } | null
     const originProvider = originProviderObj?.['proxy-providers'] || {}
 
-    const moreProviderObj = yaml.load(mergeData) as {
+    const moreProviderObj = load(mergeData) as {
       'proxy-providers': Record<string, unknown>
     } | null
     const moreProvider = moreProviderObj?.['proxy-providers'] || {}
 
-    const globalProviderObj = yaml.load(globalMergeData) as {
+    const globalProviderObj = load(globalMergeData) as {
       'proxy-providers': Record<string, unknown>
     } | null
     const globalProvider = globalProviderObj?.['proxy-providers'] || {}

@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { invoke } from '@tauri-apps/api/core'
 import { useLockFn } from 'ahooks'
-import yaml from 'js-yaml'
+import { dump, load } from 'js-yaml'
 import type { Ref } from 'react'
 import {
   useCallback,
@@ -385,7 +385,7 @@ export function DnsViewer({ ref }: { ref?: Ref<DialogRef> }) {
       config.hosts = hosts
     }
 
-    setYamlContent(yaml.dump(config, { forceQuotes: true }))
+    setYamlContent(dump(config, { forceQuotes: true }))
   }, [generateDnsConfig, setYamlContent, values.hosts])
 
   // 重置为默认值
@@ -428,7 +428,7 @@ export function DnsViewer({ ref }: { ref?: Ref<DialogRef> }) {
   // 从YAML更新表单值
   const updateValuesFromYaml = useCallback(() => {
     try {
-      const parsedYaml = yaml.load(yamlContent) as any
+      const parsedYaml = load(yamlContent) as any
       if (!parsedYaml) return
 
       skipYamlSyncRef.current = true
@@ -478,7 +478,7 @@ export function DnsViewer({ ref }: { ref?: Ref<DialogRef> }) {
 
       if (dnsConfigExists) {
         const dnsConfig = await invoke<string>('get_dns_config_content', {})
-        const config = yaml.load(dnsConfig) as any
+        const config = load(dnsConfig) as any
 
         updateValuesFromConfig(config)
         setYamlContent(dnsConfig)
@@ -524,7 +524,7 @@ export function DnsViewer({ ref }: { ref?: Ref<DialogRef> }) {
         }
       } else {
         // 使用YAML编辑器的值
-        const parsedConfig = yaml.load(yamlContent)
+        const parsedConfig = load(yamlContent)
         if (typeof parsedConfig !== 'object' || parsedConfig === null) {
           throw new Error(t('settings.modals.dns.errors.invalid'))
         }
@@ -594,7 +594,7 @@ export function DnsViewer({ ref }: { ref?: Ref<DialogRef> }) {
 
     // 允许YAML编辑后立即分析和更新表单值
     try {
-      const config = yaml.load(value || '') as any
+      const config = load(value || '') as any
       if (config && typeof config === 'object') {
         setTimeout(() => {
           updateValuesFromConfig(config)

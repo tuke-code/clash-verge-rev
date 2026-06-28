@@ -33,7 +33,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import yaml from 'js-yaml'
+import { load } from 'js-yaml'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -431,7 +431,7 @@ export const ProxyChain = ({
     if (chainConfigData) {
       try {
         // JSON is valid YAML, so one parser covers both persisted formats.
-        const parsedConfig = yaml.load(chainConfigData) as ParsedChainConfig
+        const parsedConfig = load(chainConfigData) as ParsedChainConfig
         const chainItems = toChainItems(parsedConfig)
 
         if (chainItems.length > 0) {
