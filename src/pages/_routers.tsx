@@ -6,6 +6,7 @@ import LockOpenRoundedIcon from '@mui/icons-material/LockOpenRounded'
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded'
 import SubjectRoundedIcon from '@mui/icons-material/SubjectRounded'
 import WifiRoundedIcon from '@mui/icons-material/WifiRounded'
+import { lazy, Suspense, type ComponentType } from 'react'
 import { createBrowserRouter, RouteObject } from 'react-router'
 
 import ConnectionsSvg from '@/assets/image/itemicon/connections.svg?react'
@@ -18,13 +19,18 @@ import SettingsSvg from '@/assets/image/itemicon/settings.svg?react'
 import UnlockSvg from '@/assets/image/itemicon/unlock.svg?react'
 
 import Layout from './_layout'
-import ConnectionsPage from './connections'
 import HomePage from './home'
-import ProfilesPage from './profiles'
-import ProxiesPage from './proxies'
-import RulesPage from './rules'
-import SettingsPage from './settings'
-import UnlockPage from './unlock'
+
+const createLazyRoute = (load: () => Promise<{ default: ComponentType }>) => {
+  const Component = lazy(load)
+  const LazyRoute = () => (
+    <Suspense fallback={null}>
+      <Component />
+    </Suspense>
+  )
+
+  return LazyRoute
+}
 
 export const navItems = [
   {
@@ -37,25 +43,25 @@ export const navItems = [
     label: 'layout.components.navigation.tabs.proxies',
     path: '/proxies',
     icon: [<WifiRoundedIcon key="mui" />, <ProxiesSvg key="svg" />],
-    Component: ProxiesPage,
+    Component: createLazyRoute(() => import('./proxies')),
   },
   {
     label: 'layout.components.navigation.tabs.profiles',
     path: '/profile',
     icon: [<DnsRoundedIcon key="mui" />, <ProfilesSvg key="svg" />],
-    Component: ProfilesPage,
+    Component: createLazyRoute(() => import('./profiles')),
   },
   {
     label: 'layout.components.navigation.tabs.connections',
     path: '/connections',
     icon: [<LanguageRoundedIcon key="mui" />, <ConnectionsSvg key="svg" />],
-    Component: ConnectionsPage,
+    Component: createLazyRoute(() => import('./connections')),
   },
   {
     label: 'layout.components.navigation.tabs.rules',
     path: '/rules',
     icon: [<ForkRightRoundedIcon key="mui" />, <RulesSvg key="svg" />],
-    Component: RulesPage,
+    Component: createLazyRoute(() => import('./rules')),
   },
   {
     label: 'layout.components.navigation.tabs.logs',
@@ -67,13 +73,13 @@ export const navItems = [
     label: 'layout.components.navigation.tabs.unlock',
     path: '/unlock',
     icon: [<LockOpenRoundedIcon key="mui" />, <UnlockSvg key="svg" />],
-    Component: UnlockPage,
+    Component: createLazyRoute(() => import('./unlock')),
   },
   {
     label: 'layout.components.navigation.tabs.settings',
     path: '/settings',
     icon: [<SettingsRoundedIcon key="mui" />, <SettingsSvg key="svg" />],
-    Component: SettingsPage,
+    Component: createLazyRoute(() => import('./settings')),
   },
 ]
 
