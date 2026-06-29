@@ -48,6 +48,7 @@ import { WindowControls } from '@/components/layout/window-controller'
 import { useI18n } from '@/hooks/use-i18n'
 import { useVerge } from '@/hooks/use-verge'
 import { useWindowDecorations } from '@/hooks/use-window'
+import { ensureLanguageSections } from '@/services/i18n'
 import { useThemeMode } from '@/services/states'
 import getSystem from '@/utils/get-system'
 
@@ -65,7 +66,10 @@ import 'dayjs/locale/zh-cn'
 
 export const portableFlag = false
 
-const LogsPage = lazy(() => import('./logs'))
+const LogsPage = lazy(async () => {
+  await ensureLanguageSections('logs')
+  return import('./logs')
+})
 
 type NavItem = (typeof navItems)[number]
 

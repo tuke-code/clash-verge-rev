@@ -17,12 +17,23 @@ import ProxiesSvg from '@/assets/image/itemicon/proxies.svg?react'
 import RulesSvg from '@/assets/image/itemicon/rules.svg?react'
 import SettingsSvg from '@/assets/image/itemicon/settings.svg?react'
 import UnlockSvg from '@/assets/image/itemicon/unlock.svg?react'
+import { ensureLanguageSections } from '@/services/i18n'
 
 import Layout from './_layout'
 import HomePage from './home'
 
-const createLazyRoute = (load: () => Promise<{ default: ComponentType }>) => {
-  const Component = lazy(load)
+const createLazyRoute = (
+  load: () => Promise<{ default: ComponentType }>,
+  sections?: string | readonly string[],
+) => {
+  const Component = lazy(
+    sections
+      ? async () => {
+          await ensureLanguageSections(sections)
+          return load()
+        }
+      : load,
+  )
   const LazyRoute = () => (
     <Suspense fallback={null}>
       <Component />
@@ -49,19 +60,19 @@ export const navItems = [
     label: 'layout.components.navigation.tabs.profiles',
     path: '/profile',
     icon: [<DnsRoundedIcon key="mui" />, <ProfilesSvg key="svg" />],
-    Component: createLazyRoute(() => import('./profiles')),
+    Component: createLazyRoute(() => import('./profiles'), 'rules'),
   },
   {
     label: 'layout.components.navigation.tabs.connections',
     path: '/connections',
     icon: [<LanguageRoundedIcon key="mui" />, <ConnectionsSvg key="svg" />],
-    Component: createLazyRoute(() => import('./connections')),
+    Component: createLazyRoute(() => import('./connections'), 'connections'),
   },
   {
     label: 'layout.components.navigation.tabs.rules',
     path: '/rules',
     icon: [<ForkRightRoundedIcon key="mui" />, <RulesSvg key="svg" />],
-    Component: createLazyRoute(() => import('./rules')),
+    Component: createLazyRoute(() => import('./rules'), 'rules'),
   },
   {
     label: 'layout.components.navigation.tabs.logs',
