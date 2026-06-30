@@ -13,6 +13,8 @@
 - 修复 Fake-IP 模式开启 IPv6 后未生成 fake-ip-range6
 - 修复 DNS 覆写的高级模式无法正常编辑
 - 修复部分非标准 WebDAV 服务器在备份目录已存在时的问题
+- 修复 Linux 应用内更新问题
+- 修复 JS 脚本验证因 console 方法调用导致的执行失败问题
 
 <details>
 <summary><strong> ✨ 新增功能 </strong></summary>
@@ -29,5 +31,6 @@
 - 更健壮的 service 生命周期管理
 - 更健壮的 Mihomo API 通信机制
 - 关闭 autofill 弹出窗口
+- 改进切换订阅后激活选中节点的逻辑
 
 </details>
