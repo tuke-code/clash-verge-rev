@@ -79,12 +79,14 @@ export const AppDataProvider = ({
     queryKey: ['getProxyProviders'],
     queryFn: calcuProxyProviders,
     ...TQ_MIHOMO,
+    revalidateOnMount: false,
   })
 
   const { data: ruleProviders, refetch: _refetchRuleProviders } = useQuery({
     queryKey: ['getRuleProviders'],
     queryFn: getRuleProviders,
     ...TQ_MIHOMO,
+    revalidateOnMount: false,
   })
 
   const { data: rulesData, refetch: _refetchRules } = useQuery({

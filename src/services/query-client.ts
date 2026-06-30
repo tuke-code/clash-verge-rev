@@ -18,6 +18,7 @@ type QueryOptions<T> = {
   retryDelay?: number | ((attempt: number) => number)
   refetchInterval?: number | false
   refetchIntervalInBackground?: boolean
+  revalidateOnMount?: boolean
   refetchOnWindowFocus?: boolean
   refetchOnReconnect?: boolean
 }
@@ -110,6 +111,7 @@ export function useQuery<T>(options: QueryOptions<T>): QueryResult<T> {
     retryDelay,
     refetchInterval,
     refetchIntervalInBackground,
+    revalidateOnMount,
     refetchOnWindowFocus,
     refetchOnReconnect,
     staleTime,
@@ -148,6 +150,7 @@ export function useQuery<T>(options: QueryOptions<T>): QueryResult<T> {
       }, interval)
     },
     revalidateOnFocus: refetchOnWindowFocus,
+    revalidateOnMount,
     revalidateOnReconnect: refetchOnReconnect,
     refreshInterval: refetchInterval || 0,
     refreshWhenHidden: refetchIntervalInBackground ?? false,
