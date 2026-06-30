@@ -1,6 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-
 import { getProfiles, patchProfile, patchProfilesConfig } from '@/services/cmds'
+import { useQuery } from '@/services/query-client'
 import { debugLog } from '@/utils/debug'
 
 export const useProfiles = () => {
